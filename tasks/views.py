@@ -35,9 +35,7 @@ def logout_view(request):
 def dashboard(request):
     if request.user.groups.filter(name="Programmer").exists():
 
-        tasks = Task.objects.filter(
-            assigned_to=request.user
-        ).order_by("-updated_at")
+        tasks = Task.objects.all().order_by("-updated_at")
 
         return render(
             request,
@@ -53,11 +51,7 @@ def dashboard(request):
 
 @login_required
 def task_detail(request, task_id):
-    task = get_object_or_404(
-        Task,
-        id=task_id,
-        assigned_to=request.user
-    )
+    task = get_object_or_404(Task, id=task_id)
 
     updates = task.updates.select_related("user").order_by("-created_at")
 
@@ -73,11 +67,7 @@ def task_detail(request, task_id):
 
 @login_required
 def start_task(request, task_id):
-    task = get_object_or_404(
-        Task,
-        id=task_id,
-        assigned_to=request.user
-    )
+    task = get_object_or_404(Task, id=task_id)
 
     if task.status == "pending":
         task.status = "in_progress"
@@ -88,11 +78,7 @@ def start_task(request, task_id):
 
 @login_required
 def mark_updated(request, task_id):
-    task = get_object_or_404(
-        Task,
-        id=task_id,
-        assigned_to=request.user
-    )
+    task = get_object_or_404(Task, id=task_id)
 
     if task.status == "in_progress":
         task.status = "updated"
@@ -103,11 +89,7 @@ def mark_updated(request, task_id):
 
 @login_required
 def add_task_update(request, task_id):
-    task = get_object_or_404(
-        Task,
-        id=task_id,
-        assigned_to=request.user
-    )
+    task = get_object_or_404(Task, id=task_id)
 
     if request.method == "POST":
         message = request.POST.get("message", "").strip()
@@ -126,11 +108,7 @@ def add_task_update(request, task_id):
 
 @login_required
 def change_task_status(request, task_id):
-    task = get_object_or_404(
-        Task,
-        id=task_id,
-        assigned_to=request.user
-    )
+    task = get_object_or_404(Task, id=task_id)
 
     if request.method == "POST":
         status = request.POST.get("status")
