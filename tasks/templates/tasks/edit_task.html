@@ -1,0 +1,110 @@
+{% extends "tasks/base.html" %}
+
+{% block title %}Edit Task{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 py-6 sm:py-10">
+    <div class="bg-white rounded-xl shadow-sm border p-5 sm:p-7">
+
+        <h1 class="text-2xl font-bold mb-6">
+            Edit Task
+        </h1>
+
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div class="mb-5">
+                <label class="block font-medium mb-2">
+                    Task Title
+                </label>
+
+                <input type="text"
+                       name="title"
+                       value="{{ task.title }}"
+                       required
+                       class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-black">
+            </div>
+
+            <div class="mb-6">
+                <label class="block font-medium mb-2">
+                    Description
+                </label>
+
+                <textarea name="description"
+                          rows="6"
+                          class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-black">{{ task.description }}</textarea>
+            </div>
+
+            <!-- CURRENT IMAGES -->
+            <div class="mb-6">
+                <label class="block font-medium mb-3">
+                    Current Images
+                </label>
+
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {% for image in task.images.all %}
+                    <div class="relative group">
+
+                        <img src="{{ image.image.url }}"
+                             alt="Task image"
+                             class="w-full h-32 object-cover rounded-lg border">
+
+                        <button type="submit"
+                                form="delete-image-{{ image.id }}"
+                                onclick="return confirm('Delete this image?')"
+                                class="absolute top-2 right-2 bg-red-600 text-white w-8 h-8 rounded-full hover:bg-red-700 flex items-center justify-center shadow">
+                            ×
+                        </button>
+
+                    </div>
+                    {% empty %}
+                    <p class="text-sm text-gray-500 col-span-full">
+                        No images uploaded.
+                    </p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- ADD NEW IMAGES -->
+            <div class="mb-6">
+                <label class="block font-medium mb-2">
+                    Add More Images
+                </label>
+
+                <input type="file"
+                       name="images"
+                       accept="image/*"
+                       multiple
+                       class="w-full border border-gray-300 rounded-lg px-3 py-2 bg-white">
+
+                <p class="text-sm text-gray-500 mt-1">
+                    You can select one or multiple images.
+                </p>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-2">
+                <button type="submit"
+                        class="w-full sm:w-auto bg-black text-white px-5 py-2.5 rounded-lg hover:bg-gray-800">
+                    Save Changes
+                </button>
+
+                <a href="{% url 'dashboard' %}"
+                   class="w-full sm:w-auto border border-gray-300 px-5 py-2.5 rounded-lg text-center hover:bg-gray-100">
+                    Cancel
+                </a>
+            </div>
+
+        </form>
+
+        <!-- SEPARATE DELETE FORMS -->
+        {% for image in task.images.all %}
+        <form id="delete-image-{{ image.id }}"
+              method="post"
+              action="{% url 'delete_task_image' image.id %}">
+            {% csrf_token %}
+        </form>
+        {% endfor %}
+
+    </div>
+</div>
+{% endblock %}

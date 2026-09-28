@@ -1,65 +1,154 @@
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Task Dashboard</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-100 min-h-screen">
-<div class="max-w-5xl mx-auto px-4 sm:px-6 py-5 sm:py-8">
-    <div class="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center mb-6 sm:mb-8">
-        <div>
-            <h1 class="text-2xl sm:text-3xl font-bold">Task Dashboard</h1>
-            <p class="text-gray-500 mt-1">Welcome, {{ request.user.username }}</p>
-        </div>
-        <a href="{% url 'logout' %}" class="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 text-center w-full sm:w-auto">Logout</a>
-    </div>
+{% extends "tasks/base.html" %}
 
-    <div class="space-y-4">
-        {% for task in tasks %}
-        <div class="bg-white rounded-xl shadow-sm border p-4 sm:p-6">
-            <div class="flex flex-col gap-5 sm:flex-row sm:justify-between sm:items-start">
-                <div class="flex-1 min-w-0">
-                    <h2 class="text-xl font-semibold break-words">{{ task.title }}</h2>
-                    <p class="text-gray-600 mt-2 break-words">{{ task.description|truncatechars:150 }}</p>
-                        <p class="text-sm text-gray-500 mt-3">
-                            Assigned to:
-                            <span class="font-medium text-gray-700">
-                                {% if task.assigned_to %}
-                                    {{ task.assigned_to.username }}
-                                {% else %}
-                                    Unassigned
-                                {% endif %}
-                            </span>
-                        </p>
-                        <p class="text-sm text-gray-400 mt-1">Updated: {{ task.updated_at|date:"M d, Y H:i" }}</p>
-                </div>
+{% block title %}Task Dashboard{% endblock %}
 
-                <div class="w-full sm:w-48 shrink-0">
-                    <form method="post" action="{% url 'change_task_status' task.id %}">
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 py-5 sm:py-8">
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-5">
+
+        <!-- PLAN TASK -->
+        <aside class="bg-amber-50 rounded-xl shadow-sm border border-amber-200 p-4 sm:p-5 lg:max-h-[calc(100vh-140px)] lg:overflow-y-auto">
+            <h2 class="text-xl font-bold mb-1 text-amber-800">Plan Task</h2>
+            <p class="text-sm text-amber-700 mb-4">No assigned programmer</p>
+
+            <div class="space-y-3">
+                {% for task in unassigned_tasks %}
+                <div class="border rounded-lg p-3">
+                    <div class="flex gap-3">
+                        <span class="font-semibold">{{ forloop.counter }}.</span>
+                        <div class="min-w-0">
+                            <h3 class="font-semibold break-words">{{ task.title }}</h3>
+                            <p class="text-sm text-gray-600 mt-1 break-words">
+                                {{ task.description|truncatechars:120 }}
+                            </p>
+                        </div>
+                    </div>
+
+                    {% if request.user.is_superuser %}
+                    <form method="post" action="{% url 'assign_task' task.id %}" class="mt-3">
                         {% csrf_token %}
-                        <label class="block text-sm font-medium text-gray-600 mb-2">Status</label>
-                        <select name="status" onchange="this.form.submit()" class="w-full border border-gray-300 rounded-lg px-3 py-2 bg-white text-gray-700 cursor-pointer focus:outline-none focus:ring-2 focus:ring-black">
-                            {% for value, label in status_choices %}
-                            <option value="{{ value }}" {% if task.status == value %}selected{% endif %}>{{ label }}</option>
+                        <select name="programmer"
+                                onchange="this.form.submit()"
+                                class="w-full border border-gray-300 rounded-lg px-2 py-2 text-sm bg-white cursor-pointer">
+                            <option value="">Assign to...</option>
+                            {% for programmer in programmers %}
+                            <option value="{{ programmer.id }}">{{ programmer.username }}</option>
                             {% endfor %}
                         </select>
                     </form>
-                </div>
-            </div>
 
-            <div class="mt-5">
-                <a href="{% url 'task_detail' task.id %}" class="inline-block bg-black text-white px-5 py-2 rounded-lg hover:bg-gray-800 w-full sm:w-auto text-center">View Task</a>
+                    <a href="{% url 'edit_task' task.id %}"
+                       class="block mt-2 border border-gray-300 px-3 py-2 rounded-lg hover:bg-gray-100 text-center text-sm">
+                        Edit Task
+                    </a>
+                    {% endif %}
+
+                    <a href="{% url 'task_detail' task.id %}"
+                       class="block mt-2 bg-black text-white px-3 py-2 rounded-lg hover:bg-gray-800 text-center text-sm">
+                        View Task
+                    </a>
+                </div>
+                {% empty %}
+                <p class="text-gray-500 text-sm">No unassigned tasks.</p>
+                {% endfor %}
             </div>
-        </div>
-        {% empty %}
-        <div class="bg-white rounded-xl shadow-sm p-6 sm:p-8 text-center">
-            <p class="text-gray-500">No tasks assigned to you.</p>
-        </div>
-        {% endfor %}
+        </aside>
+
+        <!-- ASSIGNED PROGRAMMERS -->
+        <main class="lg:col-span-3 min-w-0">
+            <div class="overflow-x-auto pb-3">
+                <div class="flex gap-5 min-w-max">
+                    {% for item in programmer_tasks %}
+                    <section class="bg-white rounded-xl shadow-sm border p-4 sm:p-5 w-72 shrink-0 max-h-[calc(100vh-140px)] overflow-y-auto">
+                        <h2 class="text-xl font-bold mb-1">{{ item.programmer.username }}</h2>
+                        <p class="text-sm text-gray-500 mb-4">Assigned tasks</p>
+
+                        <div class="space-y-3">
+                            {% for task in item.tasks %}
+                            <div class="border rounded-lg p-3">
+                                <div class="flex gap-3">
+                                    <span class="font-semibold">{{ forloop.counter }}.</span>
+                                    <div class="min-w-0 flex-1">
+                                        <h3 class="font-semibold break-words">{{ task.title }}</h3>
+                                        <p class="text-sm text-gray-600 mt-1 break-words">
+                                            {{ task.description|truncatechars:120 }}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div class="mt-4">
+    <div class="flex items-center justify-between mb-2">
+        <span class="text-sm font-medium text-gray-600">
+            Progress
+        </span>
+
+        <span id="progress-value-{{ task.id }}"
+              class="text-sm font-bold">
+            {{ task.progress }}%
+        </span>
+    </div>
+
+    <form method="post"
+          action="{% url 'change_task_progress' task.id %}">
+        {% csrf_token %}
+
+        <input type="range"
+               name="progress"
+               min="0"
+               max="100"
+               value="{{ task.progress }}"
+               class="w-full cursor-pointer"
+               oninput="document.getElementById('progress-value-{{ task.id }}').textContent = this.value + '%'"
+               onchange="this.form.submit()">
+    </form>
+
+    <div class="flex justify-between text-xs text-gray-400 mt-1">
+        <span>0%</span>
+        <span>100%</span>
     </div>
 </div>
-</body>
+
+                                {% if request.user.is_superuser %}
+                                <form method="post"
+                                      action="{% url 'assign_task' task.id %}"
+                                      class="mt-2">
+                                    {% csrf_token %}
+                                    <select name="programmer"
+                                            onchange="this.form.submit()"
+                                            class="w-full border border-gray-300 rounded-lg px-2 py-2 text-sm bg-white cursor-pointer">
+                                        <option value="">Re-assign to...</option>
+                                        {% for programmer in programmers %}
+                                        {% if task.assigned_to_id != programmer.id %}
+                                        <option value="{{ programmer.id }}">
+                                            {{ programmer.username }}
+                                        </option>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </select>
+                                </form>
+
+                                <a href="{% url 'edit_task' task.id %}"
+                                   class="block mt-2 border border-gray-300 px-3 py-2 rounded-lg hover:bg-gray-100 text-center text-sm">
+                                    Edit Task
+                                </a>
+                                {% endif %}
+
+                                <a href="{% url 'task_detail' task.id %}"
+                                   class="block mt-2 bg-black text-white px-3 py-2 rounded-lg hover:bg-gray-800 text-center text-sm">
+                                    View Task
+                                </a>
+                            </div>
+                            {% empty %}
+                            <p class="text-gray-500 text-sm">No tasks assigned.</p>
+                            {% endfor %}
+                        </div>
+                    </section>
+                    {% endfor %}
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %}
 
