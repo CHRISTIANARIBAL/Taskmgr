@@ -3,10 +3,10 @@
 {% block title %}Edit Task{% endblock %}
 
 {% block content %}
-<div class="max-w-2xl mx-auto px-4 py-6 sm:py-10">
-    <div class="bg-white rounded-xl shadow-sm border p-5 sm:p-7">
+<div class="max-w-2xl mx-auto px-3 sm:px-4 py-5 sm:py-10">
+    <div class="bg-white rounded-xl shadow-sm border p-4 sm:p-7">
 
-        <h1 class="text-2xl font-bold mb-6">
+        <h1 class="text-xl sm:text-2xl font-bold mb-5 sm:mb-6">
             Edit Task
         </h1>
 
@@ -22,37 +22,37 @@
                        name="title"
                        value="{{ task.title }}"
                        required
-                       class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-black">
+                       class="w-full border border-gray-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-black">
             </div>
 
-            <div class="mb-6">
+            <div class="mb-5 sm:mb-6">
                 <label class="block font-medium mb-2">
                     Description
                 </label>
 
                 <textarea name="description"
                           rows="6"
-                          class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-black">{{ task.description }}</textarea>
+                          class="w-full border border-gray-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-black resize-y">{{ task.description }}</textarea>
             </div>
 
             <!-- CURRENT IMAGES -->
-            <div class="mb-6">
+            <div class="mb-5 sm:mb-6">
                 <label class="block font-medium mb-3">
                     Current Images
                 </label>
 
-                <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
                     {% for image in task.images.all %}
                     <div class="relative group">
 
                         <img src="{{ image.image.url }}"
                              alt="Task image"
-                             class="w-full h-32 object-cover rounded-lg border">
+                             class="w-full aspect-square object-cover rounded-lg border">
 
                         <button type="submit"
                                 form="delete-image-{{ image.id }}"
                                 onclick="return confirm('Delete this image?')"
-                                class="absolute top-2 right-2 bg-red-600 text-white w-8 h-8 rounded-full hover:bg-red-700 flex items-center justify-center shadow">
+                                class="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 bg-red-600 text-white w-8 h-8 rounded-full hover:bg-red-700 flex items-center justify-center shadow text-lg">
                             ×
                         </button>
 
@@ -66,7 +66,7 @@
             </div>
 
             <!-- ADD NEW IMAGES -->
-            <div class="mb-6">
+            <div class="mb-5 sm:mb-6">
                 <label class="block font-medium mb-2">
                     Add More Images
                 </label>
@@ -75,9 +75,9 @@
                        name="images"
                        accept="image/*"
                        multiple
-                       class="w-full border border-gray-300 rounded-lg px-3 py-2 bg-white">
+                       class="w-full border border-gray-300 rounded-lg px-3 py-2.5 bg-white text-sm">
 
-                <p class="text-sm text-gray-500 mt-1">
+                <p class="text-xs sm:text-sm text-gray-500 mt-1.5">
                     You can select one or multiple images.
                 </p>
             </div>

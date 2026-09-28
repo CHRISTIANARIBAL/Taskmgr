@@ -253,3 +253,15 @@ def change_task_progress(request, task_id):
         task.save()
 
     return redirect("dashboard")
+
+@login_required
+def delete_task(request, task_id):
+    if not request.user.is_superuser:
+        return redirect("dashboard")
+
+    task = get_object_or_404(Task, id=task_id)
+
+    if request.method == "POST":
+        task.delete()
+
+    return redirect("dashboard")

@@ -9,11 +9,11 @@
 <body class="bg-gray-100 min-h-screen">
 
 <nav class="bg-white border-b shadow-sm">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6">
-        <div class="flex items-center justify-between h-16">
+    <div class="max-w-7xl mx-auto px-3 sm:px-6">
+        <div class="flex items-center justify-between min-h-16 py-2 gap-3">
 
             <a href="{% url 'dashboard' %}"
-               class="text-xl font-bold">
+               class="text-lg sm:text-xl font-bold whitespace-nowrap">
                 Task Manager
             </a>
 
@@ -21,19 +21,19 @@
 
                 {% if request.user.is_authenticated %}
 
-                    <span class="hidden sm:block text-sm text-gray-500">
+                    <span class="hidden sm:block text-sm text-gray-500 truncate max-w-32">
                         {{ request.user.username }}
                     </span>
 
                     {% if request.user.is_superuser %}
                         <a href="{% url 'add_task' %}"
-                           class="bg-blue-600 text-white px-3 py-2 rounded-lg text-sm hover:bg-blue-700">
+                           class="bg-blue-600 text-white px-3 py-2 rounded-lg text-sm hover:bg-blue-700 whitespace-nowrap">
                             + Add Task
                         </a>
                     {% endif %}
 
                     <a href="{% url 'logout' %}"
-                       class="bg-black text-white px-3 py-2 rounded-lg text-sm hover:bg-gray-800">
+                       class="bg-black text-white px-3 py-2 rounded-lg text-sm hover:bg-gray-800 whitespace-nowrap">
                         Logout
                     </a>
 
