@@ -150,7 +150,9 @@
     </div>
 
 <!-- PROGRESS -->
+<!-- PROGRESS -->
 <div class="mt-4">
+
     <div class="flex items-center justify-between mb-2">
         <span class="text-sm font-medium text-gray-600">
             Progress
@@ -162,28 +164,48 @@
         </span>
     </div>
 
-    <div class="relative w-full h-3">
-        <div class="absolute inset-0 bg-gray-200 rounded-full"></div>
+    {% if request.user.is_superuser or task.assigned_to == request.user %}
 
-        <div id="progress-fill-{{ task.id }}"
-             class="absolute left-0 top-0 h-3 rounded-full transition-all duration-150"
-             style="width: {{ task.progress }}%;">
+        <!-- EDITABLE PROGRESS -->
+        <div class="relative w-full h-3">
+
+            <div class="absolute inset-0 bg-gray-200 rounded-full"></div>
+
+            <div id="progress-fill-{{ task.id }}"
+                 class="absolute left-0 top-0 h-3 rounded-full transition-all duration-150"
+                 style="width: {{ task.progress }}%;">
+            </div>
+
+            <input type="range"
+                   id="progress-slider-{{ task.id }}"
+                   min="0"
+                   max="100"
+                   value="{{ task.progress }}"
+                   class="absolute inset-0 w-full h-3 opacity-0 cursor-pointer"
+                   oninput="updateDashboardProgress({{ task.id }}, this.value)"
+                   onchange="saveDashboardProgress({{ task.id }}, this.value)">
         </div>
 
-        <input type="range"
-               id="progress-slider-{{ task.id }}"
-               min="0"
-               max="100"
-               value="{{ task.progress }}"
-               class="absolute inset-0 w-full h-3 opacity-0 cursor-pointer"
-               oninput="updateDashboardProgress({{ task.id }}, this.value)"
-               onchange="saveDashboardProgress({{ task.id }}, this.value)">
-    </div>
+    {% else %}
+
+        <!-- READ ONLY PROGRESS -->
+        <div class="w-full h-3 bg-gray-200 rounded-full overflow-hidden cursor-not-allowed">
+
+            <div id="progress-fill-{{ task.id }}"
+                 class="h-full rounded-full"
+                 style="width: {{ task.progress }}%;
+                        background-color: #9ca3af;">
+            </div>
+
+        </div>
+
+    {% endif %}
 
     <div class="flex justify-between text-xs text-gray-400 mt-1">
         <span>0%</span>
         <span>100%</span>
     </div>
+
 </div>
 
     <!-- PUSH BUTTONS TO BOTTOM -->
@@ -243,10 +265,18 @@
         {% endif %}
 
         <!-- VIEW TASK -->
-        <a href="{% url 'task_detail' task.id %}"
-           class="block mt-2 bg-black text-white px-3 py-2 rounded-lg hover:bg-gray-800 text-center text-sm">
-            View Task
-        </a>
+        {% if request.user.is_superuser or task.assigned_to == request.user %}
+<a href="{% url 'task_detail' task.id %}"
+   class="block mt-2 bg-black text-white px-3 py-2 rounded-lg hover:bg-gray-800 text-center text-sm">
+    View Task
+</a>
+{% else %}
+<button type="button"
+        disabled
+        class="block w-full mt-2 bg-gray-200 text-gray-400 px-3 py-2 rounded-lg text-center text-sm cursor-not-allowed">
+    🔒 Not Assigned
+</button>
+{% endif %}
 
     </div>
 
