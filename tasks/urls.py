@@ -17,4 +17,8 @@ urlpatterns = [
     path("task/image/<int:image_id>/delete/", views.delete_task_image, name="delete_task_image"),
     path("task/<int:task_id>/progress/", views.change_task_progress, name="change_task_progress"),
     path("task/<int:task_id>/delete/", views.delete_task, name="delete_task"),
+    path("task/<int:task_id>/checklist/add/", views.add_checklist_item, name="add_checklist_item"),
+    path("checklist/<int:item_id>/toggle/", views.toggle_checklist_item, name="toggle_checklist_item"),
+    path("checklist/<int:item_id>/delete/", views.delete_checklist_item, name="delete_checklist_item"),
+    path("checklist/<int:item_id>/edit/", views.edit_checklist_item, name="edit_checklist_item"),
 ]
