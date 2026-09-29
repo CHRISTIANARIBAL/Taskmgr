@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import *
 from django.contrib.auth.models import User
+from django.http import JsonResponse
 
 
 def login_view(request):
@@ -105,15 +106,19 @@ def task_detail(request, task_id):
 
     updates = task.updates.select_related("user").order_by("-created_at")
 
+    checklist_items = task.checklist_items.filter(
+        user=request.user
+    ).order_by("created_at")
+
     return render(
         request,
         "tasks/task_detail.html",
         {
             "task": task,
             "updates": updates,
+            "checklist_items": checklist_items,
         }
     )
-
 
 @login_required
 def start_task(request, task_id):
@@ -252,7 +257,14 @@ def change_task_progress(request, task_id):
         task.progress = progress
         task.save()
 
-    return redirect("dashboard")
+        return JsonResponse({
+            "success": True,
+            "progress": progress
+        })
+
+    return JsonResponse({
+        "success": False
+    }, status=400)
 
 @login_required
 def delete_task(request, task_id):
@@ -265,3 +277,71 @@ def delete_task(request, task_id):
         task.delete()
 
     return redirect("dashboard")
+
+@login_required
+def add_checklist_item(request, task_id):
+    task = get_object_or_404(
+        Task,
+        id=task_id,
+        assigned_to=request.user
+    )
+
+    if request.method == "POST":
+        item = request.POST.get("item", "").strip()
+
+        if item:
+            TaskChecklist.objects.create(
+                task=task,
+                user=request.user,
+                item=item
+            )
+
+    return redirect("task_detail", task_id=task.id)
+
+
+@login_required
+def toggle_checklist_item(request, item_id):
+    checklist = get_object_or_404(
+        TaskChecklist,
+        id=item_id,
+        user=request.user
+    )
+
+    if request.method == "POST":
+        checklist.is_completed = not checklist.is_completed
+        checklist.save()
+
+    return redirect("task_detail", task_id=checklist.task.id)
+
+
+@login_required
+def delete_checklist_item(request, item_id):
+    checklist = get_object_or_404(
+        TaskChecklist,
+        id=item_id,
+        user=request.user
+    )
+
+    task_id = checklist.task.id
+
+    if request.method == "POST":
+        checklist.delete()
+
+    return redirect("task_detail", task_id=task_id)
+
+@login_required
+def edit_checklist_item(request, item_id):
+    checklist = get_object_or_404(
+        TaskChecklist,
+        id=item_id,
+        user=request.user
+    )
+
+    if request.method == "POST":
+        item = request.POST.get("item", "").strip()
+
+        if item:
+            checklist.item = item
+            checklist.save()
+
+    return redirect("task_detail", task_id=checklist.task.id)

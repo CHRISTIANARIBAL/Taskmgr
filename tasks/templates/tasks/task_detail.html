@@ -9,52 +9,81 @@
     <div class="bg-white rounded-xl shadow-sm border p-4 sm:p-6">
 
         <!-- HEADER -->
-        <div class="flex flex-col gap-4">
+<div class="flex flex-col gap-4">
 
-            <div class="min-w-0">
+    <div class="flex items-start justify-between gap-3">
 
-                <h1 class="text-2xl sm:text-3xl font-bold break-words">
-                    {{ task.title }}
-                </h1>
+        <div class="min-w-0 flex-1">
+            <h1 class="text-2xl sm:text-3xl font-bold break-words">
+                {{ task.title }}
+            </h1>
+        </div>
 
-                {% if task.description %}
-                <p class="text-gray-600 mt-3 whitespace-pre-line break-words">
-                    {{ task.description }}
-                </p>
-                {% endif %}
+        <a href="{% url 'dashboard' %}"
+           class="shrink-0 w-9 h-9 rounded-full border border-gray-300 flex items-center justify-center text-gray-500 hover:bg-gray-100 hover:text-black transition text-xl leading-none"
+           title="Exit">
+            ×
+        </a>
+
+    </div>
+
+    {% if task.description %}
+    <p class="text-gray-600 whitespace-pre-line break-words">
+        {{ task.description }}
+    </p>
+    {% endif %}
 
             </div>
 
 
             <!-- PROGRESS -->
-            <div class="w-full">
+{% if task.assigned_to == request.user or request.user.is_superuser %}
+<div class="w-full">
+    <div class="flex items-center justify-between mb-2">
+        <span class="text-sm font-medium text-gray-600">Progress</span>
+        <span id="task-progress-value" class="text-sm sm:text-base font-bold">
+            {{ task.progress }}%
+        </span>
+    </div>
 
-                <div class="flex items-center justify-between mb-2">
+    <div class="relative w-full h-3">
+        <div class="absolute inset-0 bg-gray-200 rounded-full"></div>
 
-                    <span class="text-sm font-medium text-gray-600">
-                        Progress
-                    </span>
+        <div id="task-progress-fill"
+             class="absolute left-0 top-0 h-3 rounded-full transition-all duration-150"
+             style="width: {{ task.progress }}%;">
+        </div>
 
-                    <span class="text-sm sm:text-base font-bold">
-                        {{ task.progress }}%
-                    </span>
+        <input type="range"
+               id="task-progress-slider"
+               min="0"
+               max="100"
+               value="{{ task.progress }}"
+               class="absolute inset-0 w-full h-3 opacity-0 cursor-pointer">
+    </div>
 
-                </div>
+    <div class="flex justify-between text-xs text-gray-400 mt-1">
+        <span>0%</span>
+        <span>100%</span>
+    </div>
+</div>
+{% else %}
+<div class="w-full">
+    <div class="flex items-center justify-between mb-2">
+        <span class="text-sm font-medium text-gray-600">Progress</span>
+        <span class="text-sm sm:text-base font-bold">
+            {{ task.progress }}%
+        </span>
+    </div>
 
-                <div class="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
-
-                    <div class="h-full bg-black rounded-full transition-all duration-300"
-                         style="width: {{ task.progress }}%;">
-                    </div>
-
-                </div>
-
-                <div class="flex justify-between text-xs text-gray-400 mt-1">
-                    <span>0%</span>
-                    <span>100%</span>
-                </div>
-
-            </div>
+    <div class="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
+        <div id="task-progress-view"
+             class="h-full rounded-full transition-all duration-300"
+             style="width: {{ task.progress }}%;">
+        </div>
+    </div>
+</div>
+{% endif %}
 
 
             <!-- VISUAL REFERENCES -->
@@ -120,6 +149,164 @@
         {% endif %}
 
         {% endif %}
+
+
+        <!-- PERSONAL CHECKLIST -->
+{% if task.assigned_to == request.user %}
+<div class="mt-6 sm:mt-8 border-t pt-6">
+
+    <div class="flex items-center justify-between mb-4">
+        <div>
+            <h2 class="text-lg sm:text-xl font-semibold">
+                My Checklist
+            </h2>
+            <p class="text-sm text-gray-500 mt-1">
+                Personal checklist for this task
+            </p>
+        </div>
+    </div>
+
+    <!-- ADD CHECKLIST ITEM -->
+    <form method="post"
+          action="{% url 'add_checklist_item' task.id %}"
+          class="flex flex-col sm:flex-row gap-2 mb-4">
+        {% csrf_token %}
+
+        <input type="text"
+               name="item"
+               maxlength="255"
+               required
+               placeholder="Add a checklist item..."
+               class="flex-1 border border-gray-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-black">
+
+        <button type="submit"
+                class="w-full sm:w-auto bg-black text-white px-5 py-2.5 rounded-lg hover:bg-gray-800">
+            Add
+        </button>
+    </form>
+
+    <!-- CHECKLIST ITEMS -->
+    <div class="space-y-2">
+
+        {% for item in checklist_items %}
+
+<div id="checklist-item-{{ item.id }}"
+     class="border rounded-lg p-3">
+
+    <!-- NORMAL VIEW -->
+    <div id="checklist-view-{{ item.id }}"
+         class="flex items-center gap-3">
+
+        <!-- CHECKBOX -->
+        <form method="post"
+              action="{% url 'toggle_checklist_item' item.id %}"
+              class="shrink-0">
+            {% csrf_token %}
+
+            <button type="submit"
+                    class="w-5 h-5 rounded border flex items-center justify-center
+                    {% if item.is_completed %}
+                        bg-black text-white border-black
+                    {% else %}
+                        bg-white border-gray-400
+                    {% endif %}">
+
+                {% if item.is_completed %}
+                    ✓
+                {% endif %}
+
+            </button>
+        </form>
+
+        <!-- ITEM TEXT -->
+        <div class="min-w-0 flex-1">
+            <p class="break-words
+                {% if item.is_completed %}
+                    line-through text-gray-400
+                {% else %}
+                    text-gray-700
+                {% endif %}">
+                {{ item.item }}
+            </p>
+        </div>
+
+        <!-- ACTIONS -->
+        <div class="flex items-center gap-3 shrink-0">
+
+            <button type="button"
+                    onclick="editChecklist({{ item.id }})"
+                    class="text-blue-600 hover:text-blue-800 text-sm">
+                Edit
+            </button>
+
+            <form method="post"
+                  action="{% url 'delete_checklist_item' item.id %}"
+                  onsubmit="return confirm('Delete this checklist item?')">
+                {% csrf_token %}
+
+                <button type="submit"
+                        class="text-red-600 hover:text-red-800 text-sm">
+                    Delete
+                </button>
+            </form>
+
+        </div>
+
+    </div>
+
+
+    <!-- EDIT VIEW -->
+    <form id="checklist-edit-{{ item.id }}"
+          method="post"
+          action="{% url 'edit_checklist_item' item.id %}"
+          class="hidden">
+
+        {% csrf_token %}
+
+        <div class="flex flex-col sm:flex-row gap-2">
+
+            <input type="text"
+                   name="item"
+                   value="{{ item.item }}"
+                   maxlength="255"
+                   required
+                   class="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-black">
+
+            <div class="flex gap-2">
+
+                <button type="submit"
+                        class="flex-1 sm:flex-none bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 text-sm">
+                    Save
+                </button>
+
+                <button type="button"
+                        onclick="cancelChecklistEdit({{ item.id }})"
+                        class="flex-1 sm:flex-none border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-100 text-sm">
+                    Cancel
+                </button>
+
+            </div>
+
+        </div>
+
+    </form>
+
+</div>
+
+        {% empty %}
+
+        <div class="border border-dashed rounded-lg p-4 text-center">
+            <p class="text-sm text-gray-500">
+                No checklist items yet.
+            </p>
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+</div>
+{% endif %}
 
 
         <!-- UPDATES -->
@@ -195,17 +382,71 @@
 
 
 <script>
-function openImageModal(imageUrl) {
-    document.getElementById("modalImage").src = imageUrl;
-    document.getElementById("imageModal").classList.remove("hidden");
-    document.getElementById("imageModal").classList.add("flex");
+function getProgressColor(value) {
+    value = parseInt(value);
+
+    if (value < 10) return "#9ca3af";
+    if (value < 20) return "#ef4444";
+    if (value < 30) return "#f97316";
+    if (value < 40) return "#f59e0b";
+    if (value < 50) return "#eab308";
+    if (value < 60) return "#84cc16";
+    if (value < 70) return "#22c55e";
+    if (value < 80) return "#14b8a6";
+    if (value < 90) return "#3b82f6";
+    return "#a855f7";
 }
 
-function closeImageModal() {
-    document.getElementById("imageModal").classList.add("hidden");
-    document.getElementById("imageModal").classList.remove("flex");
-    document.getElementById("modalImage").src = "";
+const slider = document.getElementById("task-progress-slider");
+
+if (slider) {
+    slider.addEventListener("input", function() {
+        const value = this.value;
+        const color = getProgressColor(value);
+
+        document.getElementById("task-progress-value").textContent =
+            value + "%";
+
+        const fill = document.getElementById("task-progress-fill");
+
+        fill.style.width = value + "%";
+        fill.style.backgroundColor = color;
+    });
+
+    slider.addEventListener("change", function() {
+        saveTaskProgress(this.value);
+    });
 }
+
+function saveTaskProgress(value) {
+    fetch("{% url 'change_task_progress' task.id %}", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            "X-CSRFToken": "{{ csrf_token }}"
+        },
+        body: "progress=" + encodeURIComponent(value)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (!data.success) {
+            console.error("Failed to save progress");
+        }
+    })
+    .catch(error => {
+        console.error("Error saving progress:", error);
+    });
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+    if (slider) {
+        const value = slider.value;
+        const fill = document.getElementById("task-progress-fill");
+
+        fill.style.width = value + "%";
+        fill.style.backgroundColor = getProgressColor(value);
+    }
+});
 </script>
 
 {% endblock %}
