@@ -447,6 +447,25 @@ document.addEventListener("DOMContentLoaded", function() {
         fill.style.backgroundColor = getProgressColor(value);
     }
 });
+
+function editChecklist(id) {
+    document.getElementById("checklist-view-" + id).classList.add("hidden");
+    document.getElementById("checklist-edit-" + id).classList.remove("hidden");
+
+    const input = document.querySelector(
+        "#checklist-edit-" + id + " input"
+    );
+
+    if (input) {
+        input.focus();
+        input.select();
+    }
+}
+
+function cancelChecklistEdit(id) {
+    document.getElementById("checklist-edit-" + id).classList.add("hidden");
+    document.getElementById("checklist-view-" + id).classList.remove("hidden");
+}
 </script>
 
 {% endblock %}
