@@ -25,12 +25,17 @@
                         {{ request.user.username }}
                     </span>
 
-                    {% if request.user.is_superuser %}
+                    {% if request.user.is_superuser or request.user.groups.all.0.name == "Programmer" %}
                         <a href="{% url 'add_task' %}"
-                           class="bg-blue-600 text-white px-3 py-2 rounded-lg text-sm hover:bg-blue-700 whitespace-nowrap">
+                        class="bg-blue-600 text-white px-3 py-2 rounded-lg text-sm hover:bg-blue-700 whitespace-nowrap">
                             + Add Task
                         </a>
                     {% endif %}
+
+                    <a href="{% url 'completed_tasks' %}"
+   class="bg-green-600 text-white px-3 py-2 rounded-lg text-sm hover:bg-green-700 whitespace-nowrap">
+    ✓ Completed
+</a>
 
                     <a href="{% url 'logout' %}"
                        class="bg-black text-white px-3 py-2 rounded-lg text-sm hover:bg-gray-800 whitespace-nowrap">

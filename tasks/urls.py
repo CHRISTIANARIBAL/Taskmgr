@@ -6,9 +6,13 @@ urlpatterns = [
     path("", views.dashboard, name="dashboard"),
     path("login/", views.login_view, name="login"),
     path("logout/", views.logout_view, name="logout"),
+
+    path("completed-tasks/", views.completed_tasks, name="completed_tasks"),
+
     path("task/<int:task_id>/", views.task_detail, name="task_detail"),
     path("task/<int:task_id>/start/", views.start_task, name="start_task"),
     path("task/<int:task_id>/updated/", views.mark_updated, name="mark_updated"),
+    path("task/<int:task_id>/complete/", views.complete_task, name="complete_task"),
     path("task/<int:task_id>/add-update/", views.add_task_update, name="add_task_update"),
     path("task/<int:task_id>/status/", views.change_task_status, name="change_task_status"),
     path("task/<int:task_id>/assign/", views.assign_task, name="assign_task"),
@@ -17,8 +21,10 @@ urlpatterns = [
     path("task/image/<int:image_id>/delete/", views.delete_task_image, name="delete_task_image"),
     path("task/<int:task_id>/progress/", views.change_task_progress, name="change_task_progress"),
     path("task/<int:task_id>/delete/", views.delete_task, name="delete_task"),
+
     path("task/<int:task_id>/checklist/add/", views.add_checklist_item, name="add_checklist_item"),
     path("checklist/<int:item_id>/toggle/", views.toggle_checklist_item, name="toggle_checklist_item"),
     path("checklist/<int:item_id>/delete/", views.delete_checklist_item, name="delete_checklist_item"),
     path("checklist/<int:item_id>/edit/", views.edit_checklist_item, name="edit_checklist_item"),
 ]
+

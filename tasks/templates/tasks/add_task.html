@@ -36,6 +36,48 @@
                           placeholder="Describe the task..."></textarea>
             </div>
 
+            {% if request.user.is_superuser %}
+<div class="mb-5 sm:mb-6">
+    <label class="block font-medium mb-2">
+        Assign To
+    </label>
+
+    <div class="border border-gray-300 rounded-lg p-3 space-y-2">
+        {% for programmer in programmers %}
+        <label class="flex items-center gap-3 cursor-pointer">
+            <input type="checkbox"
+                   name="assigned_to"
+                   value="{{ programmer.id }}"
+                   class="w-4 h-4 rounded">
+            <span>{{ programmer.username }}</span>
+        </label>
+        {% empty %}
+        <p class="text-sm text-gray-500">
+            No programmers available.
+        </p>
+        {% endfor %}
+    </div>
+
+    <p class="text-xs text-gray-500 mt-1.5">
+        You can assign this task to multiple programmers.
+    </p>
+</div>
+{% else %}
+<div class="mb-5 sm:mb-6">
+    <label class="block font-medium mb-2">
+        Assigned To
+    </label>
+
+    <div class="bg-gray-100 rounded-lg px-3 py-2.5">
+        {{ request.user.username }} (You)
+    </div>
+
+    <p class="text-xs text-gray-500 mt-1.5">
+        This task will automatically be assigned to you.
+    </p>
+</div>
+{% endif %}
+
             <div class="mb-5 sm:mb-6">
                 <label class="block font-medium mb-2">
                     Task Images

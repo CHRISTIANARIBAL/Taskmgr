@@ -6,7 +6,7 @@ from .models import Task, TaskUpdate
 class TaskAdmin(admin.ModelAdmin):
     list_display = (
         "title",
-        "assigned_to",
+        "assigned_users",
         "status",
         "created_at",
         "updated_at",
@@ -25,6 +25,12 @@ class TaskAdmin(admin.ModelAdmin):
     )
 
     ordering = ("-updated_at",)
+
+    @admin.display(description="Assigned To")
+    def assigned_users(self, obj):
+        return ", ".join(
+            user.username for user in obj.assigned_to.all()
+        )
 
 
 @admin.register(TaskUpdate)

@@ -1,0 +1,124 @@
+
+{% extends "tasks/base.html" %}
+
+{% block title %}Completed Tasks{% endblock %}
+
+{% block content %}
+
+<div class="max-w-6xl mx-auto px-3 sm:px-4 py-5 sm:py-6">
+
+    <div class="mb-6">
+        <h1 class="text-2xl sm:text-3xl font-bold">
+            Completed Tasks
+        </h1>
+
+        <p class="text-gray-500 mt-1">
+            History of tasks that have been completed.
+        </p>
+    </div>
+
+    {% if tasks %}
+
+    <div class="space-y-3">
+
+        {% for task in tasks %}
+
+        <a href="{% url 'task_detail' task.id %}"
+           class="block bg-white border rounded-xl p-4 sm:p-5 hover:shadow-md transition">
+
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+
+                <div class="min-w-0">
+
+                    <h2 class="font-semibold text-lg break-words">
+                        {{ task.title }}
+                    </h2>
+
+                    {% if task.description %}
+                    <p class="text-sm text-gray-500 mt-1 line-clamp-2">
+                        {{ task.description }}
+                    </p>
+                    {% endif %}
+
+                </div>
+
+                <div class="shrink-0">
+                    <span class="inline-flex items-center gap-1 bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-medium">
+                        ✓ Completed
+                    </span>
+                </div>
+
+            </div>
+
+            <div class="mt-4 pt-3 border-t flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6 text-sm text-gray-500">
+
+                <div>
+                    <span class="font-medium text-gray-700">
+                        Assigned:
+                    </span>
+
+                    {% if task.assigned_to.all %}
+                        {% for programmer in task.assigned_to.all %}
+                            {{ programmer.username }}{% if not forloop.last %}, {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        Unassigned
+                    {% endif %}
+                </div>
+
+                <div>
+                    <span class="font-medium text-gray-700">
+                        Completed by:
+                    </span>
+
+                    {% if task.completed_by %}
+                        {{ task.completed_by.username }}
+                    {% else %}
+                        Unknown
+                    {% endif %}
+                </div>
+
+                <div>
+                    <span class="font-medium text-gray-700">
+                        Completed:
+                    </span>
+
+                    {% if task.completed_at %}
+                        {{ task.completed_at|date:"M d, Y H:i" }}
+                    {% else %}
+                        —
+                    {% endif %}
+                </div>
+
+            </div>
+
+        </a>
+
+        {% endfor %}
+
+    </div>
+
+    {% else %}
+
+    <div class="bg-white border border-dashed rounded-xl p-8 text-center">
+
+        <div class="text-4xl mb-3">
+            ✓
+        </div>
+
+        <h2 class="font-semibold text-lg">
+            No completed tasks yet
+        </h2>
+
+        <p class="text-gray-500 text-sm mt-1">
+            Tasks marked as completed will appear here.
+        </p>
+
+    </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}
+
