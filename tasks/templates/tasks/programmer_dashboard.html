@@ -1,0 +1,435 @@
+{% extends "tasks/base.html" %}
+
+{% block title %}Task Dashboard{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-5 sm:py-8">
+
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-5">
+
+        <!-- PLAN TASK -->
+        <aside class="bg-amber-50 rounded-xl shadow-sm border border-amber-200 p-4 sm:p-5 lg:max-h-[calc(100vh-140px)] lg:overflow-y-auto">
+
+            <h2 class="text-lg sm:text-xl font-bold mb-1 text-amber-800">
+                Plan Task
+            </h2>
+
+            <p class="text-sm text-amber-700 mb-4">
+                No assigned programmer
+            </p>
+
+            <div class="space-y-3">
+
+                {% for task in unassigned_tasks %}
+
+                <div class="border border-amber-200 rounded-lg p-3 bg-white/50">
+
+                    <div class="flex gap-3">
+                        <span class="font-semibold shrink-0">
+                            {{ forloop.counter }}.
+                        </span>
+
+                        <div class="min-w-0 flex-1">
+                            <h3 class="font-semibold break-words">
+                                {{ task.title }}
+                            </h3>
+
+                            <p class="text-sm text-gray-600 mt-1 break-words">
+                                {{ task.description|truncatechars:120 }}
+                            </p>
+                        </div>
+                    </div>
+
+                    {% if request.user.is_superuser %}
+
+                    <form method="post"
+                          action="{% url 'assign_task' task.id %}"
+                          class="mt-3">
+
+                        {% csrf_token %}
+
+                        <select name="programmer"
+                                onchange="this.form.submit()"
+                                class="w-full border border-gray-300 rounded-lg px-2.5 py-2 text-sm bg-white cursor-pointer">
+                            <option value="">Assign to...</option>
+
+                            {% for programmer in programmers %}
+                            <option value="{{ programmer.id }}">
+                                {{ programmer.username }}
+                            </option>
+                            {% endfor %}
+
+                        </select>
+                    </form>
+
+                  <div class="flex gap-2 mt-2">
+    <a href="{% url 'edit_task' task.id %}"
+       class="flex-1 border border-gray-300 px-3 py-2 rounded-lg hover:bg-gray-100 text-center text-sm">
+        Edit Task
+    </a>
+
+    <form method="post"
+          action="{% url 'delete_task' task.id %}"
+          class="flex-1"
+          onsubmit="return confirm('Are you sure you want to delete this task? This cannot be undone.')">
+        {% csrf_token %}
+        <button type="submit"
+                class="w-full bg-red-600 text-white px-3 py-2 rounded-lg hover:bg-red-700 text-sm">
+            Delete
+        </button>
+    </form>
+</div>
+
+                    {% endif %}
+
+                    <a href="{% url 'task_detail' task.id %}"
+                       class="block mt-2 bg-black text-white px-3 py-2 rounded-lg hover:bg-gray-800 text-center text-sm">
+                        View Task
+                    </a>
+
+                </div>
+
+                {% empty %}
+
+                <p class="text-gray-500 text-sm">
+                    No unassigned tasks.
+                </p>
+
+                {% endfor %}
+
+            </div>
+        </aside>
+
+
+        <!-- ASSIGNED PROGRAMMERS -->
+        <main class="lg:col-span-3 min-w-0">
+
+            <!-- HORIZONTAL SCROLL -->
+            <div class="overflow-x-auto pb-3">
+
+                <div class="flex gap-4 sm:gap-5 min-w-max">
+
+                    {% for item in programmer_tasks %}
+
+                    <!-- PROGRAMMER COLUMN -->
+                    <section class="bg-white rounded-xl shadow-sm border p-4 sm:p-5 w-[18rem] sm:w-72 shrink-0 max-h-[calc(100vh-140px)] overflow-y-auto">
+
+                        <h2 class="text-lg sm:text-xl font-bold mb-1 break-words">
+                            {{ item.programmer.username }}
+                        </h2>
+
+                        <p class="text-sm text-gray-500 mb-4">
+                            Assigned tasks
+                        </p>
+
+
+                        <!-- TASKS -->
+                        <div class="space-y-3">
+
+                            {% for task in item.tasks %}
+
+<div class="border rounded-lg p-3 flex flex-col h-[300px]">
+
+    <!-- TASK TITLE + DESCRIPTION -->
+    <div class="flex gap-3 h-[95px] overflow-hidden">
+        <span class="font-semibold shrink-0">
+            {{ forloop.counter }}.
+        </span>
+
+        <div class="min-w-0 flex-1">
+            <h3 class="font-semibold truncate"
+                title="{{ task.title }}">
+                {{ task.title }}
+            </h3>
+
+            <p class="text-sm text-gray-600 mt-1 line-clamp-3 break-words"
+               title="{{ task.description }}">
+                {{ task.description }}
+            </p>
+        </div>
+    </div>
+
+<!-- PROGRESS -->
+<!-- PROGRESS -->
+<div class="mt-4">
+
+    <div class="flex items-center justify-between mb-2">
+        <span class="text-sm font-medium text-gray-600">
+            Progress
+        </span>
+
+        <span id="progress-value-{{ task.id }}"
+              class="progress-value text-sm font-bold"
+              data-task-id="{{ task.id }}">
+            {{ task.progress }}%
+        </span>
+    </div>
+
+    {% if request.user.is_superuser or request.user in task.assigned_to.all %}
+
+        <!-- EDITABLE PROGRESS -->
+        <div class="relative w-full h-3">
+
+            <div class="absolute inset-0 bg-gray-200 rounded-full"></div>
+
+            <div 
+                 class="progress-fill absolute left-0 top-0 h-3 rounded-full transition-all duration-150"
+                 data-task-id="{{ task.id }}"
+                 style="width: {{ task.progress }}%;">
+            </div>
+
+            <input type="range"
+       id="progress-slider-{{ task.id }}"
+       min="0"
+       max="100"
+       value="{{ task.progress }}"
+       data-task-id="{{ task.id }}"
+       class="task-progress-slider absolute inset-0 w-full h-3 opacity-0 cursor-pointer">
+        </div>
+
+    {% else %}
+
+        <!-- READ ONLY PROGRESS -->
+        <div class="w-full h-3 bg-gray-200 rounded-full overflow-hidden cursor-not-allowed">
+
+            <div class="progress-fill h-full rounded-full"
+     data-task-id="{{ task.id }}"
+     style="width: {{ task.progress }}%;">
+</div>
+        </div>
+
+    {% endif %}
+
+    <div class="flex justify-between text-xs text-gray-400 mt-1">
+        <span>0%</span>
+        <span>100%</span>
+    </div>
+
+</div>
+
+    <!-- PUSH BUTTONS TO BOTTOM -->
+    <div class="mt-3">
+
+        {% if request.user.is_superuser %}
+
+        <!-- RE-ASSIGN -->
+<!-- ASSIGN PROGRAMMERS -->
+<form method="post"
+      action="{% url 'assign_task' task.id %}"
+      class="mt-3">
+
+    {% csrf_token %}
+
+    <div class="border border-gray-300 rounded-lg p-3 space-y-2 bg-white">
+
+        {% for programmer in programmers %}
+
+        <label class="flex items-center gap-2 text-sm cursor-pointer">
+
+            <input type="checkbox"
+                   name="programmer"
+                   value="{{ programmer.id }}"
+                   {% if programmer in task.assigned_to.all %}checked{% endif %}
+                   class="w-4 h-4 rounded">
+
+            <span>{{ programmer.username }}</span>
+
+        </label>
+
+        {% endfor %}
+
+    </div>
+
+    <button type="submit"
+            class="w-full mt-2 bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 text-sm">
+        Update Assignment
+    </button>
+
+</form>
+
+        <!-- EDIT + DELETE -->
+        <div class="flex gap-2 mt-2">
+
+            <a href="{% url 'edit_task' task.id %}"
+               class="flex-1 border border-gray-300 px-3 py-2 rounded-lg hover:bg-gray-100 text-center text-sm">
+                Edit Task
+            </a>
+
+            <form method="post"
+                  action="{% url 'delete_task' task.id %}"
+                  class="flex-1"
+                  onsubmit="return confirm('Are you sure you want to delete this task? This cannot be undone.')">
+
+                {% csrf_token %}
+
+                <button type="submit"
+                        class="w-full bg-red-600 text-white px-3 py-2 rounded-lg hover:bg-red-700 text-sm">
+                    Delete
+                </button>
+
+            </form>
+
+        </div>
+
+        {% endif %}
+
+        <!-- VIEW TASK -->
+        {% if request.user.is_superuser or request.user in task.assigned_to.all %}
+<a href="{% url 'task_detail' task.id %}"
+   class="block mt-2 bg-black text-white px-3 py-2 rounded-lg hover:bg-gray-800 text-center text-sm">
+    View Task
+</a>
+{% else %}
+<button type="button"
+        disabled
+        class="block w-full mt-2 bg-gray-200 text-gray-400 px-3 py-2 rounded-lg text-center text-sm cursor-not-allowed">
+    🔒 Not Assigned
+</button>
+{% endif %}
+
+    </div>
+
+</div>
+
+                            {% empty %}
+
+                            <p class="text-gray-500 text-sm">
+                                No tasks assigned.
+                            </p>
+
+                            {% endfor %}
+
+                        </div>
+
+                    </section>
+
+                    {% endfor %}
+
+                </div>
+
+            </div>
+
+        </main>
+
+    </div>
+
+</div>
+
+<script>
+function getProgressColor(value) {
+    value = parseInt(value);
+
+    if (value < 10) return "#9ca3af";
+    if (value < 20) return "#ef4444";
+    if (value < 30) return "#f97316";
+    if (value < 40) return "#f59e0b";
+    if (value < 50) return "#eab308";
+    if (value < 60) return "#84cc16";
+    if (value < 70) return "#22c55e";
+    if (value < 80) return "#14b8a6";
+    if (value < 90) return "#3b82f6";
+    return "#a855f7";
+}
+
+function updateDashboardProgress(taskId, value) {
+    const percentage = parseInt(value);
+    const color = getProgressColor(percentage);
+
+    // Update EVERY percentage belonging to this task
+    document.querySelectorAll(
+        `.progress-value[data-task-id="${taskId}"]`
+    ).forEach(function(element) {
+        element.textContent = percentage + "%";
+    });
+
+    // Update EVERY progress bar belonging to this task
+    document.querySelectorAll(
+        `.progress-fill[data-task-id="${taskId}"]`
+    ).forEach(function(fill) {
+        fill.style.width = percentage + "%";
+        fill.style.backgroundColor = color;
+    });
+
+    // Update EVERY slider belonging to this task
+    document.querySelectorAll(
+        `.task-progress-slider[data-task-id="${taskId}"]`
+    ).forEach(function(slider) {
+        slider.value = percentage;
+    });
+}
+
+function saveDashboardProgress(taskId, value) {
+    fetch("/task/" + taskId + "/progress/", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            "X-CSRFToken": getCookie("csrftoken")
+        },
+        body: "progress=" + encodeURIComponent(value)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (!data.success) {
+            console.error("Failed to save progress");
+        }
+    })
+    .catch(error => {
+        console.error("Error saving progress:", error);
+    });
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+
+    if (document.cookie && document.cookie !== "") {
+        const cookies = document.cookie.split(";");
+
+        for (let cookie of cookies) {
+            cookie = cookie.trim();
+
+            if (cookie.substring(0, name.length + 1) === name + "=") {
+                cookieValue = decodeURIComponent(
+                    cookie.substring(name.length + 1)
+                );
+                break;
+            }
+        }
+    }
+
+    return cookieValue;
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+
+    // Set initial colors
+    document.querySelectorAll(".task-progress-slider").forEach(function(slider) {
+        const taskId = slider.dataset.taskId;
+        const value = slider.value;
+
+        updateDashboardProgress(taskId, value);
+    });
+
+    // Handle sliders
+    document.querySelectorAll(".task-progress-slider").forEach(function(slider) {
+
+        slider.addEventListener("input", function() {
+            const taskId = this.dataset.taskId;
+            const value = this.value;
+
+            // Update ALL copies immediately while dragging
+            updateDashboardProgress(taskId, value);
+        });
+
+        slider.addEventListener("change", function() {
+            const taskId = this.dataset.taskId;
+            const value = this.value;
+
+            // Save to database
+            saveDashboardProgress(taskId, value);
+        });
+
+    });
+
+});
+</script>
+{% endblock %}

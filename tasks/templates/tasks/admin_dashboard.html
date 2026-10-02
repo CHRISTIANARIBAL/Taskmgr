@@ -1,0 +1,40 @@
+{% extends "tasks/base.html" %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-5 sm:py-6 md:py-8">
+
+    <div class="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center mb-6 sm:mb-8">
+
+        <div class="min-w-0">
+            <h1 class="text-2xl sm:text-3xl font-bold">
+                Admin Dashboard
+            </h1>
+
+            <p class="text-gray-500 mt-1 truncate">
+                Welcome, {{ request.user.username }}
+            </p>
+        </div>
+
+        <a href="{% url 'logout' %}"
+           class="bg-red-500 text-white px-4 py-2.5 rounded-lg text-center hover:bg-red-600 w-full sm:w-auto whitespace-nowrap">
+            Logout
+        </a>
+
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm border p-4 sm:p-6">
+
+        <h2 class="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">
+            Task Management
+        </h2>
+
+        <p class="text-gray-600">
+            Admin task management will appear here.
+        </p>
+
+    </div>
+
+</div>
+{% endblock %}

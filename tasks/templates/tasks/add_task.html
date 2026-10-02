@@ -1,0 +1,105 @@
+{% extends "tasks/base.html" %}
+
+{% block title %}Add Task{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto px-3 sm:px-4 py-5 sm:py-10">
+    <div class="bg-white rounded-xl shadow-sm border p-4 sm:p-7">
+
+        <h1 class="text-xl sm:text-2xl font-bold mb-5 sm:mb-6">
+            Add Task
+        </h1>
+
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div class="mb-5">
+                <label class="block font-medium mb-2">
+                    Task Title
+                </label>
+
+                <input type="text"
+                       name="title"
+                       required
+                       class="w-full border border-gray-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-black"
+                       placeholder="Enter task title">
+            </div>
+
+            <div class="mb-5 sm:mb-6">
+                <label class="block font-medium mb-2">
+                    Description
+                </label>
+
+                <textarea name="description"
+                          rows="6"
+                          class="w-full border border-gray-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-black resize-y"
+                          placeholder="Describe the task..."></textarea>
+            </div>
+
+            {% if request.user.is_superuser %}
+<div class="mb-5 sm:mb-6">
+    <label class="block font-medium mb-2">
+        Assign To
+    </label>
+
+    <div class="border border-gray-300 rounded-lg p-3 space-y-2">
+        {% for programmer in programmers %}
+        <label class="flex items-center gap-3 cursor-pointer">
+            <input type="checkbox"
+                   name="assigned_to"
+                   value="{{ programmer.id }}"
+                   class="w-4 h-4 rounded">
+            <span>{{ programmer.username }}</span>
+        </label>
+        {% empty %}
+        <p class="text-sm text-gray-500">
+            No programmers available.
+        </p>
+        {% endfor %}
+    </div>
+
+    <p class="text-xs text-gray-500 mt-1.5">
+        You can assign this task to multiple programmers.
+    </p>
+</div>
+{% else %}
+<div class="mb-5 sm:mb-6">
+    <label class="block font-medium mb-2">
+        Assigned To
+    </label>
+
+    <div class="bg-gray-100 rounded-lg px-3 py-2.5">
+        {{ request.user.username }} (You)
+    </div>
+
+    <p class="text-xs text-gray-500 mt-1.5">
+        This task will automatically be assigned to you.
+    </p>
+</div>
+{% endif %}
+
+            <div class="mb-5 sm:mb-6">
+                <label class="block font-medium mb-2">
+                    Task Images
+                </label>
+
+                <input type="file"
+                       name="images"
+                       accept="image/*"
+                       multiple
+                       class="w-full border border-gray-300 rounded-lg px-3 py-2.5 bg-white text-sm">
+
+                <p class="text-xs sm:text-sm text-gray-500 mt-1.5">
+                    Optional. You can select one or multiple images.
+                </p>
+            </div>
+
+            <button type="submit"
+                    class="w-full bg-black text-white py-2.5 rounded-lg hover:bg-gray-800">
+                Create Task
+            </button>
+
+        </form>
+    </div>
+</div>
+{% endblock %}
