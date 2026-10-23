@@ -7,7 +7,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         Group.objects.get_or_create(name="Admin")
-        Group.objects.get_or_create(name="Programmer")
+        Group.objects.get_or_create(name="programmer")
 
         self.stdout.write(
             self.style.SUCCESS("Admin and Programmer groups created.")

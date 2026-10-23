@@ -43,12 +43,12 @@ def logout_view(request):
 def dashboard(request):
     if not (
         request.user.is_superuser
-        or request.user.groups.filter(name="Programmer").exists()
+        or request.user.groups.filter(name="programmer").exists()
     ):
         return render(request, "tasks/no_access.html")
 
     programmers = User.objects.filter(
-        groups__name="Programmer",
+        groups__name="programmer",
         is_superuser=False
     ).order_by("username").distinct()
 
@@ -77,7 +77,7 @@ def dashboard(request):
 
 @login_required
 def add_task(request):
-    if not request.user.is_superuser and not request.user.groups.filter(name="Programmer").exists():
+    if not request.user.is_superuser and not request.user.groups.filter(name="programmer").exists():
         return redirect("dashboard")
 
     if request.method == "POST":
@@ -99,7 +99,7 @@ def add_task(request):
             if programmer_ids:
                 programmers = User.objects.filter(
                     id__in=programmer_ids,
-                    groups__name="Programmer",
+                    groups__name="programmer",
                     is_superuser=False
                 ).distinct()
 
@@ -116,7 +116,7 @@ def add_task(request):
         return redirect("task_detail", task_id=task.id)
 
     programmers = User.objects.filter(
-        groups__name="Programmer"
+        groups__name="programmer"
     ).order_by("username").distinct()
 
     return render(
@@ -214,7 +214,7 @@ def assign_task(request, task_id):
 
         programmers = User.objects.filter(
             id__in=programmer_ids,
-            groups__name="Programmer",
+            groups__name="programmer",
             is_superuser=False
         ).distinct()
 

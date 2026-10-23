@@ -1,0 +1,52 @@
+services:
+  db:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: ${DB_NAME:?Set DB_NAME in .env}
+      POSTGRES_USER: ${DB_USER:?Set DB_USER in .env}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env}
+    volumes:
+      - task_manager_postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - default
+
+  web:
+    build: .
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      DB_HOST: db
+      DB_PORT: "5432"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - task_manager_media:/app/media
+      - task_manager_static:/app/staticfiles
+    expose:
+      - "8000"
+    networks:
+      default:
+      shared_proxy:
+        aliases:
+          - task-manager-web
+
+volumes:
+  task_manager_postgres_data:
+  task_manager_media:
+  task_manager_static:
+
+networks:
+  default:
+  shared_proxy:
+    external: true
+    name: shared_proxy

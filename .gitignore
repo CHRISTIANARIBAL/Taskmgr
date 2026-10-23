@@ -1,27 +1,75 @@
+
+# =========================
 # Python
+# =========================
 __pycache__/
 *.py[cod]
+*$py.class
 
-# Virtual environment
+# =========================
+# Virtual environments
+# =========================
 env/
-.venv/
 venv/
+.venv/
+ENV/
 
-# Django
+# =========================
+# Environment variables / secrets
+# =========================
+.env
+.env.*
+!.env.example
+!.env.example.*
+
+# =========================
+# Django local database
+# =========================
 *.sqlite3
 *.sqlite3-*
-*.log
+*.db
+*.sqlite
 db.sqlite3.before-multi-assignment
 
-# Media uploaded locally
+# =========================
+# Logs and temporary files
+# =========================
+*.log
+*.tmp
+*.bak
+*.swp
+*.swo
+
+# =========================
+# Uploaded media
+# =========================
 media/
 
-# Environment variables
-.env
-
-# Static files
+# =========================
+# Collected static files
+# =========================
 staticfiles/
 
+# =========================
+# Testing / coverage
+# =========================
+.pytest_cache/
+.coverage
+htmlcov/
+
+# =========================
 # IDE
+# =========================
 .vscode/
 .idea/
+
+# =========================
+# Operating system
+# =========================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Local database and data backups
+*.sqlite3.backup*
+task_manager_data_backup.json
